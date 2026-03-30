@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>RadiSearch — Choose Mode</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0d1117;--card:#161b22;--border:#30363d;--primary:#1a56db;--teal:#0d9488;--text:#e6edf3;--muted:#8b949e;--radius:16px;--shadow:0 8px 32px rgba(0,0,0,.4);}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+.logo{display:flex;align-items:center;gap:12px;font-size:28px;font-weight:600;letter-spacing:-.5px;margin-bottom:12px;color:var(--text);}
+.logo svg{width:36px;height:36px;color:var(--primary);}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 20px;}
+.logo{display:flex;align-items:center;gap:14px;margin-bottom:12px;}
+.tagline{color:var(--muted);font-size:15px;margin-bottom:56px;text-align:center;}
+.user-bar{position:fixed;top:16px;right:20px;display:flex;align-items:center;gap:10px;font-size:13px;}
+.user-bar span{color:var(--muted);}
+.logout-link{color:#f87171;text-decoration:none;padding:4px 14px;border:1px solid rgba(220,38,38,.3);border-radius:20px;font-size:12px;background:rgba(220,38,38,.08);transition:background .15s;}
+.logout-link:hover{background:rgba(220,38,38,.16);}
+.cards{display:grid;grid-template-columns:1fr 1fr;gap:24px;width:100%;max-width:720px;}
+.mode-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:36px 32px;cursor:pointer;transition:transform .18s,border-color .18s,box-shadow .18s;text-decoration:none;color:var(--text);display:flex;flex-direction:column;gap:16px;}
+.mode-card:hover{transform:translateY(-4px);box-shadow:var(--shadow);}
+.mode-card.llm:hover{border-color:var(--primary);}
+.mode-card.search:hover{border-color:var(--teal);}
+.mode-icon{width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;}
+.mode-icon.llm-icon{background:rgba(26,86,219,.15);color:var(--primary);}
+.mode-icon.srch-icon{background:rgba(13,148,136,.15);color:var(--teal);}
+.mode-icon svg{width:26px;height:26px;}
+.mode-title{font-size:20px;font-weight:600;letter-spacing:-.3px;}
+.badge-new{font-size:10px;font-weight:700;padding:2px 8px;background:var(--primary);color:#fff;border-radius:20px;letter-spacing:.5px;vertical-align:middle;margin-left:8px;}
+.mode-desc{font-size:14px;color:var(--muted);line-height:1.6;}
+.mode-pills{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px;}
+.pill{font-size:11px;padding:3px 10px;border-radius:20px;font-weight:500;}
+.pill.blue{background:rgba(26,86,219,.15);color:#60a5fa;}
+.pill.teal{background:rgba(13,148,136,.15);color:#34d399;}
+.footer{margin-top:48px;font-size:12px;color:var(--muted);text-align:center;}
+.footer-sub{margin-top:6px;font-size:12px;color:var(--muted);opacity:.5;}
+#countdown{position:fixed;bottom:20px;right:20px;font-family:'DM Mono',monospace;font-size:12px;color:#f87171;background:rgba(220,38,38,.15);padding:5px 14px;border-radius:20px;border:1px solid rgba(220,38,38,.25);}
+@media(max-width:600px){.cards{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+<div class="user-bar">
+  <span>👤 {{ user_name }}</span>
+  <a class="logout-link" href="/auth/logout" onclick="ping()">Logout</a>
+  <button onclick="exitApp()" style="color:#dc2626;background:#fff0f0;border:1px solid rgba(220,38,38,.3);border-radius:20px;font-size:12px;padding:4px 14px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background .15s;" onmouseover="this.style.background='#ffe4e6'" onmouseout="this.style.background='#fff0f0'">Exit App</button>
+</div>
+<div class="logo">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2v-4M9 21H5a2 2 0 0 1-2-2v-4m0 0h18"/>
+  </svg>
+  RadiSearch
+</div>
+<p class="tagline">Radiology report intelligence — choose your search mode</p>
+<div class="cards">
+  <a class="mode-card llm" href="/llm_mode" onclick="ping()">
+    <div class="mode-icon llm-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 2a10 10 0 1 0 10 10"/><path d="M12 8v4l2 2"/><path d="M18 2v4h4"/><path d="M22 2 18 6"/>
+      </svg>
+    </div>
+    <div><span class="mode-title">LLM Search <span class="badge-new">AI</span></span></div>
+    <p class="mode-desc">Ask questions in plain English. The AI parses your intent, searches the database, then summarises findings, answers questions, or ranks reports.</p>
+    <div class="mode-pills">
+      <span class="pill blue">Natural language</span>
+      <span class="pill blue">Summarise</span>
+      <span class="pill blue">Q&amp;A</span>
+      <span class="pill blue">Rank reports</span>
+    </div>
+  </a>
+  <a class="mode-card search" href="/search_mode" onclick="ping()">
+    <div class="mode-icon srch-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+      </svg>
+    </div>
+    <div><span class="mode-title">Custom Search</span></div>
+    <p class="mode-desc">Direct semantic search with manual filters. Search by clinical keywords and filter by radiologist, modality, clinic and date range.</p>
+    <div class="mode-pills">
+      <span class="pill teal">Semantic search</span>
+      <span class="pill teal">Filter by radiologist</span>
+      <span class="pill teal">Dashboard</span>
+      <span class="pill teal">Export CSV</span>
+    </div>
+  </a>
+</div>
+<p class="footer">{{ footer_label }}</p>
+<p class="footer-sub">Created by Shubham Sakhuja</p>
+<div id="countdown">⏱ --:--</div>
+<script>
+function ping(){fetch('/ping',{method:'POST'}).catch(()=>{});}
+function exitApp(){
+  if(!confirm('Close RadiSearch? The server will shut down.')) return;
+  fetch('/exit',{method:'POST'}).then(()=>{window.location.href='/closed?reason=user';}).catch(()=>{window.location.href='/closed?reason=user';});
+}
+(function pollHeartbeat(){
+  fetch('/heartbeat').then(r=>r.json()).then(data=>{
+    const m=Math.floor(data.remaining/60).toString().padStart(2,'0');
+    const s=(data.remaining%60).toString().padStart(2,'0');
+    document.getElementById('countdown').textContent=`⏱ ${m}:${s}`;
+    if(data.expired){window.location.href='/closed';}
+    else{setTimeout(pollHeartbeat,1000);}
+  }).catch(()=>{window.location.href='/closed';});
+})();
+</script>
+</body>
+</html>

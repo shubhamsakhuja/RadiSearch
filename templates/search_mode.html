@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>RadiSearch — Custom Search</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#eef1f6;--card:#fff;--border:#dde3ec;--primary:#1a56db;--primary-h:#1444b8;--teal:#0d9488;--teal-h:#0f766e;--export:#7c3aed;--text:#1e293b;--muted:#64748b;--success:#16a34a;--danger:#dc2626;--radius:14px;--radius-sm:8px;--shadow:0 2px 12px rgba(0,0,0,.07);--shadow-lg:0 8px 32px rgba(0,0,0,.12);}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+#overlay{position:fixed;inset:0;background:linear-gradient(135deg,#0f2250 0%,#1a56db 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;color:#fff;gap:18px;}
+.overlay-logo{display:flex;align-items:center;gap:12px;font-size:24px;font-weight:600;letter-spacing:-.4px;}
+.overlay-logo svg{width:38px;height:38px;opacity:.9;}
+.overlay-sub{font-size:14px;opacity:.65;margin-top:-10px;}
+.progress-track{width:340px;height:6px;background:rgba(255,255,255,.2);border-radius:10px;overflow:hidden;}
+#progress-bar{height:100%;width:0;background:#fff;border-radius:10px;transition:width .3s ease;}
+#progress-label{font-family:'DM Mono',monospace;font-size:13px;opacity:.75;}
+.topbar{background:var(--card);border-bottom:1px solid var(--border);padding:0 28px;height:58px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 1px 4px rgba(0,0,0,.06);}
+.topbar-left{display:flex;align-items:center;gap:14px;}
+.back-btn{display:flex;align-items:center;gap:5px;color:var(--muted);font-size:13px;text-decoration:none;padding:5px 10px;border-radius:6px;transition:all .15s;}
+.back-btn:hover{background:#f1f5f9;color:var(--text);}
+.topbar-logo{display:flex;align-items:center;gap:10px;text-decoration:none;}
+.topbar-logo svg{width:26px;height:26px;}
+.topbar-right{display:flex;align-items:center;gap:12px;}
+#countdown{font-family:'DM Mono',monospace;font-size:12px;color:var(--danger);background:#fee2e2;padding:4px 12px;border-radius:20px;display:none;}
+.tab-nav{display:flex;gap:4px;}
+.tab-btn{padding:6px 16px;border:none;background:transparent;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;color:var(--muted);border-radius:6px;transition:all .15s;}
+.tab-btn:hover{background:#f1f5f9;color:var(--text);}
+.tab-btn.active{background:#dbeafe;color:var(--primary);}
+.user-info{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);}
+.logout-link{color:var(--danger);text-decoration:none;padding:3px 12px;border:1px solid rgba(220,38,38,.3);border-radius:20px;background:#fff0f0;font-size:12px;transition:background .15s;}
+.logout-link:hover{background:#ffe4e6;}
+.exit-btn{color:var(--danger);background:#fff0f0;border:1px solid rgba(220,38,38,.3);border-radius:20px;font-size:12px;padding:3px 12px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background .15s;}
+.exit-btn:hover{background:#ffe4e6;}
+.page-body{max-width:1700px;margin:0 auto;padding:24px 28px;}
+.tab-content{display:none;}
+.tab-content.active{display:block;}
+.dual-grid{display:grid;grid-template-columns:1fr 1fr;gap:22px;}
+.panel{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);display:flex;flex-direction:column;}
+.panel-header{padding:18px 22px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;}
+.panel-icon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.panel-icon.blue{background:#dbeafe;color:var(--primary);}
+.panel-icon.teal{background:#ccfbf1;color:var(--teal);}
+.panel-title{font-size:14px;font-weight:600;color:var(--text);}
+.panel-subtitle{font-size:12px;color:var(--muted);margin-top:1px;}
+.panel-body{padding:18px 22px;}
+.control-row{display:flex;align-items:flex-end;gap:9px;flex-wrap:wrap;margin-bottom:14px;}
+.field-group{display:flex;flex-direction:column;gap:4px;flex:1;min-width:130px;}
+.field-group label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);}
+input[type=text],input[type=date],select{width:100%;padding:8px 11px;border:1px solid var(--border);border-radius:var(--radius-sm);font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);background:#f8fafc;transition:border-color .15s,box-shadow .15s;outline:none;}
+input:focus,select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(26,86,219,.1);background:#fff;}
+.date-separator{color:var(--muted);font-size:13px;padding-bottom:8px;flex-shrink:0;}
+.btn{padding:8px 16px;border:none;border-radius:var(--radius-sm);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:background .15s,transform .1s;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;}
+.btn:active{transform:scale(.97);}
+.btn-sm{padding:6px 12px;font-size:12px;}
+.btn-primary{background:var(--primary);color:#fff;}
+.btn-primary:hover{background:var(--primary-h);}
+.btn-teal{background:var(--teal);color:#fff;}
+.btn-teal:hover{background:var(--teal-h);}
+.btn-ghost{background:#f1f5f9;color:var(--muted);border:1px solid var(--border);}
+.btn-ghost:hover{background:#e2e8f0;color:var(--text);}
+.btn-export{background:#ede9fe;color:var(--export);border:1px solid #ddd6fe;}
+.btn-export:hover{background:#ddd6fe;}
+.history-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;}
+.history-pill{font-size:12px;padding:3px 10px;background:#f1f5f9;border:1px solid var(--border);border-radius:20px;cursor:pointer;color:var(--muted);transition:all .15s;}
+.history-pill:hover{background:#dbeafe;color:var(--primary);border-color:#bfdbfe;}
+.results-area{padding:0 22px 22px;overflow-x:auto;}
+.results-header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px;}
+.result-count{font-size:13px;font-weight:600;color:var(--success);background:#dcfce7;border-radius:6px;padding:4px 12px;}
+.results-actions{display:flex;gap:6px;flex-wrap:wrap;}
+.no-results{color:var(--muted);font-size:14px;padding:10px 0;}
+.no-results.warn{color:#92400e;background:#fef3c7;border:1px solid #fcd34d;border-radius:8px;padding:10px 14px;}
+.table-wrap{overflow-x:auto;}
+table{border-collapse:collapse;width:100%;font-size:13px;}
+th{background:#f8fafc;color:var(--muted);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;padding:9px 11px;border-bottom:2px solid var(--border);text-align:left;white-space:nowrap;}
+td{padding:9px 11px;border-bottom:1px solid #f1f5f9;vertical-align:top;color:var(--text);}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:#fafbfe;}
+mark{background:#fef08a;border-radius:2px;padding:0 1px;font-weight:600;}
+.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600;background:#f1f5f9;color:var(--muted);letter-spacing:.3px;}
+.sim-cell{font-family:'DM Mono',monospace;font-size:12px;color:var(--primary);}
+details summary{cursor:pointer;font-weight:500;color:var(--primary);font-size:13px;user-select:none;}
+details summary:hover{text-decoration:underline;}
+.report-body{margin-top:10px;padding:12px;background:#f8fafc;border-radius:var(--radius-sm);font-size:13px;line-height:1.7;border-left:3px solid var(--primary);}
+.spinner{display:inline-block;width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--primary);border-radius:50%;animation:spin .7s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.loading-msg{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:14px;padding:16px 0;}
+#toast-container{position:fixed;bottom:24px;right:24px;z-index:9998;display:flex;flex-direction:column;gap:8px;}
+.toast{padding:12px 18px;border-radius:10px;font-size:13px;font-weight:500;box-shadow:var(--shadow-lg);animation:slideIn .25s ease;display:flex;align-items:center;gap:8px;max-width:320px;}
+.toast.success{background:#166534;color:#fff;}
+.toast.error{background:#991b1b;color:#fff;}
+.toast.info{background:var(--primary);color:#fff;}
+@keyframes slideIn{from{transform:translateX(60px);opacity:0;}to{transform:translateX(0);opacity:1;}}
+.dash-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px;margin-bottom:22px;}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px 22px;box-shadow:var(--shadow);}
+.stat-label{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);}
+.stat-value{font-size:32px;font-weight:600;color:var(--text);margin-top:6px;letter-spacing:-1px;}
+.stat-sub{font-size:12px;color:var(--muted);margin-top:2px;}
+.charts-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px;}
+.chart-panel{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px 22px;box-shadow:var(--shadow);}
+.chart-title{font-size:14px;font-weight:600;color:var(--text);margin-bottom:14px;}
+.bar-chart{display:flex;flex-direction:column;gap:8px;}
+.bar-row{display:flex;align-items:center;gap:10px;}
+.bar-label{width:130px;font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:right;flex-shrink:0;}
+.bar-track{flex:1;height:16px;background:#f1f5f9;border-radius:4px;overflow:hidden;}
+.bar-fill{height:100%;border-radius:4px;background:var(--primary);transition:width .6s ease;}
+.bar-fill.teal{background:var(--teal);}
+.bar-count{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);width:36px;text-align:right;}
+.trend-row{display:flex;align-items:flex-end;gap:3px;height:80px;margin-top:8px;}
+.trend-bar{flex:1;border-radius:3px 3px 0 0;background:var(--primary);opacity:.65;transition:opacity .15s;cursor:default;min-width:4px;}
+.trend-bar:hover{opacity:1;}
+footer{text-align:center;padding:10px 0 14px;font-size:11px;color:var(--muted);border-top:1px solid var(--border);margin-top:32px;}
+@media(max-width:960px){.dual-grid,.charts-row{grid-template-columns:1fr;}.page-body{padding:16px;}}
+</style>
+</head>
+<body>
+<div id="overlay">
+  <div class="overlay-logo">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:38px;height:38px;opacity:.9;color:#fff;"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2v-4M9 21H5a2 2 0 0 1-2-2v-4m0 0h18"/></svg>
+    <span style="margin-left:12px;font-size:20px;font-weight:600;opacity:.9;">RadiSearch</span>
+  </div>
+  <p class="overlay-sub">Initialising semantic search engine…</p>
+  <div class="progress-track"><div id="progress-bar"></div></div>
+  <span id="progress-label">0%</span>
+</div>
+<div id="toast-container"></div>
+<div class="topbar">
+  <div class="topbar-left">
+    <a class="back-btn" href="/" onclick="ping()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>Back
+    </a>
+    <a class="topbar-logo" href="/search_mode">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:26px;height:26px;color:var(--primary);"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2v-4M9 21H5a2 2 0 0 1-2-2v-4m0 0h18"/></svg>
+      <span style="font-weight:600;font-size:17px;color:var(--primary);letter-spacing:-.3px;">RadiSearch</span>
+    </a>
+  </div>
+  <div class="topbar-right">
+    <nav class="tab-nav">
+      <button class="tab-btn active" onclick="switchTab('search',this)">Search</button>
+      <button class="tab-btn" onclick="switchTab('dashboard',this)">Dashboard</button>
+    </nav>
+    <div class="user-info">
+      <span>👤 {{ user_name }}</span>
+      <a class="logout-link" href="/auth/logout" onclick="ping()">Logout</a>
+      <button onclick="exitApp()" class="exit-btn">Exit App</button>
+    </div>
+    <div id="countdown"></div>
+  </div>
+</div>
+<div class="page-body">
+  <div id="tab-search" class="tab-content active">
+    <div class="dual-grid">
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-icon blue">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          </div>
+          <div>
+            <div class="panel-title">Patient Report Semantic Search</div>
+            <div class="panel-subtitle">Natural language search · similarity threshold 40%</div>
+          </div>
+        </div>
+        <div class="panel-body">
+          <div class="control-row">
+            <div class="field-group">
+              <label>Search Query</label>
+              <input type="text" id="query" placeholder="e.g. pleural effusion, lumbar fracture…" oninput="debouncedHistory()">
+            </div>
+            <button class="btn btn-primary" onclick="searchReports()">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>Search
+            </button>
+            <button class="btn btn-ghost" onclick="resetSearch()">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>Reset
+            </button>
+          </div>
+          <div class="history-row" id="history-pills"></div>
+        </div>
+        <div class="results-area" id="search-results"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-icon teal">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          </div>
+          <div>
+            <div class="panel-title">Radiologist Report Metrics</div>
+            <div class="panel-subtitle">Filter by radiologist, modality, clinic and date range</div>
+          </div>
+        </div>
+        <div class="panel-body">
+          <div class="control-row">
+            <div class="field-group">
+              <label>Radiologist</label>
+              <select id="radiologist_select"><option value="">— All Radiologists —</option></select>
+            </div>
+          </div>
+          <div class="control-row">
+            <div class="field-group">
+              <label>Modality</label>
+              <select id="f_modality"><option value="">All Modalities</option></select>
+            </div>
+            <div class="field-group">
+              <label>Clinic</label>
+              <select id="f_clinic"><option value="">All Clinics</option></select>
+            </div>
+          </div>
+          <div class="control-row">
+            <div class="field-group">
+              <label>Start Date</label>
+              <input type="date" id="start_date">
+            </div>
+            <span class="date-separator">→</span>
+            <div class="field-group">
+              <label>End Date</label>
+              <input type="date" id="end_date">
+            </div>
+          </div>
+          <div class="control-row" style="margin-bottom:0">
+            <button class="btn btn-teal" onclick="filterReports()">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>Filter
+            </button>
+            <button class="btn btn-ghost" onclick="resetFilter()">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>Reset
+            </button>
+          </div>
+        </div>
+        <div class="results-area" id="filter-results"></div>
+      </div>
+    </div>
+  </div>
+  <div id="tab-dashboard" class="tab-content">
+    <div class="dash-grid">
+      <div class="stat-card"><div class="stat-label">Total Reports</div><div class="stat-value" id="stat-total">—</div><div class="stat-sub">all time in database</div></div>
+      <div class="stat-card"><div class="stat-label">Reports Today</div><div class="stat-value" id="stat-today">—</div><div class="stat-sub" id="stat-today-date">—</div></div>
+      <div class="stat-card"><div class="stat-label">Modalities</div><div class="stat-value" id="stat-modalities">—</div><div class="stat-sub">distinct scan types</div></div>
+      <div class="stat-card"><div class="stat-label">Radiologists</div><div class="stat-value" id="stat-rads">—</div><div class="stat-sub">active in dataset</div></div>
+    </div>
+    <div class="charts-row">
+      <div class="chart-panel"><div class="chart-title">Reports by Modality</div><div class="bar-chart" id="modality-chart"></div></div>
+      <div class="chart-panel"><div class="chart-title">Top 10 Radiologists by Volume</div><div class="bar-chart" id="rad-chart"></div></div>
+      <div class="chart-panel">
+        <div class="chart-title">30-Day Report Trend</div>
+        <div class="trend-row" id="trend-chart"></div>
+        <div style="font-size:11px;color:var(--muted);margin-top:6px;text-align:center;">Hover bars for date details</div>
+      </div>
+    </div>
+  </div>
+</div>
+<footer>{{ footer_label }} &nbsp;·&nbsp; Created by Shubham Sakhuja</footer>
+<script>
+function ping(){fetch('/ping',{method:'POST'}).catch(()=>{}); }
+function exitApp(){
+  if(!confirm('Close RadiSearch? The server will shut down.')) return;
+  fetch('/exit',{method:'POST'}).then(()=>{window.location.href='/closed?reason=user';}).catch(()=>{window.location.href='/closed?reason=user';});
+}
+(function pollHeartbeat(){fetch('/heartbeat').then(r=>r.json()).then(data=>{const el=document.getElementById('countdown');if(el){const m=Math.floor(data.remaining/60).toString().padStart(2,'0');const s=(data.remaining%60).toString().padStart(2,'0');el.textContent=`⏱ ${m}:${s}`;el.style.display='block';}if(data.expired){window.location.href='/closed';}else{setTimeout(pollHeartbeat,1000);}}).catch(()=>{window.location.href='/closed';});})();
+function toast(msg,type='info',d=3000){const el=document.createElement('div');el.className=`toast ${type}`;el.textContent=msg;document.getElementById('toast-container').appendChild(el);setTimeout(()=>el.remove(),d);}
+function switchTab(name,btn){ping();document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));document.getElementById('tab-'+name).classList.add('active');btn.classList.add('active');if(name==='dashboard')loadDashboard();}
+function pollProgress(){fetch('/progress').then(r=>r.json()).then(data=>{const pct=data.total>0?Math.floor(data.current/data.total*100):0;document.getElementById('progress-bar').style.width=pct+'%';document.getElementById('progress-label').textContent=pct+'%';if(data.status==='done'){document.getElementById('overlay').style.display='none';loadFilterOptions();loadHistory();}else{setTimeout(pollProgress,500);}});}
+function loadFilterOptions(){fetch('/filter_options').then(r=>r.json()).then(data=>{populateSelect('radiologist_select',data.radiologists);populateSelect('f_modality',data.modalities);populateSelect('f_clinic',data.clinics);});}
+function populateSelect(id,items){const sel=document.getElementById(id);items.forEach(v=>{const o=document.createElement('option');o.value=v;o.textContent=v;sel.appendChild(o);});}
+let hd;function debouncedHistory(){clearTimeout(hd);hd=setTimeout(loadHistory,300);}
+function loadHistory(){fetch('/history').then(r=>r.json()).then(list=>{const c=document.getElementById('history-pills');c.innerHTML='';list.slice().reverse().forEach(q=>{const p=document.createElement('span');p.className='history-pill';p.textContent=q;p.onclick=()=>{ping();document.getElementById('query').value=q;searchReports();};c.appendChild(p);});});}
+async function searchReports(){ping();const query=document.getElementById('query').value.trim();if(!query){toast('Please enter a search query.','error');return;}const el=document.getElementById('search-results');el.innerHTML='<div class="loading-msg"><span class="spinner"></span>Searching…</div>';const resp=await fetch('/search',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({query})});el.innerHTML=await resp.text();loadHistory();}
+function resetSearch(){ping();document.getElementById('query').value='';document.getElementById('search-results').innerHTML='';}
+async function filterReports(){ping();const el=document.getElementById('filter-results');el.innerHTML='<div class="loading-msg"><span class="spinner"></span>Filtering…</div>';const resp=await fetch('/filter_reports',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({radiologist:document.getElementById('radiologist_select').value||null,modality:document.getElementById('f_modality').value||null,clinic:document.getElementById('f_clinic').value||null,start_date:document.getElementById('start_date').value||null,end_date:document.getElementById('end_date').value||null})});el.innerHTML=await resp.text();}
+function resetFilter(){ping();['start_date','end_date'].forEach(id=>document.getElementById(id).value='');['radiologist_select','f_modality','f_clinic'].forEach(id=>document.getElementById(id).selectedIndex=0);document.getElementById('filter-results').innerHTML='';}
+function toggleAllDetails(prefix,open){ping();document.querySelectorAll(`[id^="${prefix}_"]`).forEach(d=>{if(open)d.setAttribute('open','');else d.removeAttribute('open');});}
+function exportCSV(tableId){ping();const table=document.getElementById(tableId);if(!table){toast('No results to export.','error');return;}const headers=Array.from(table.querySelectorAll('thead th')).map(th=>th.textContent.trim());const rows=Array.from(table.querySelectorAll('tbody tr')).map(tr=>Array.from(tr.querySelectorAll('td')).map((td,i)=>{if(i===headers.length-1){const div=td.querySelector('.report-body');return div?div.innerText.replace(/\n+/g,' ').trim():td.innerText.trim();}return td.innerText.trim();}));let csv=headers.map(h=>`"${h}"`).join(',')+'\n';rows.forEach(row=>{csv+=row.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')+'\n';});const blob=new Blob([csv],{type:'text/csv'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=`radisearch_${new Date().toISOString().slice(0,10)}.csv`;a.click();URL.revokeObjectURL(url);toast('CSV downloaded.','success');}
+function loadDashboard(){fetch('/stats').then(r=>r.json()).then(data=>{document.getElementById('stat-total').textContent=data.total_reports.toLocaleString();document.getElementById('stat-today').textContent=data.today_reports.toLocaleString();document.getElementById('stat-today-date').textContent=new Date().toLocaleDateString('en-AU',{weekday:'long',day:'numeric',month:'long'});document.getElementById('stat-modalities').textContent=Object.keys(data.modality_counts).length;document.getElementById('stat-rads').textContent=Object.keys(data.top_radiologists).length;renderBarChart('modality-chart',data.modality_counts,'primary');renderBarChart('rad-chart',data.top_radiologists,'teal');renderTrend('trend-chart',data.daily_trend);});}
+function renderBarChart(cId,counts,cls){const c=document.getElementById(cId);c.innerHTML='';const max=Math.max(...Object.values(counts),1);Object.entries(counts).sort((a,b)=>b[1]-a[1]).forEach(([label,count])=>{const pct=Math.round(count/max*100);c.innerHTML+=`<div class="bar-row"><span class="bar-label" title="${label}">${label}</span><div class="bar-track"><div class="bar-fill ${cls}" style="width:${pct}%"></div></div><span class="bar-count">${count}</span></div>`;});}
+function renderTrend(cId,trend){const c=document.getElementById(cId);c.innerHTML='';if(!trend||!Object.keys(trend).length){c.innerHTML='<p class="no-results">No trend data.</p>';return;}const sorted=Object.entries(trend).sort((a,b)=>a[0].localeCompare(b[0]));const max=Math.max(...sorted.map(e=>e[1]),1);sorted.forEach(([date,count])=>{const h=Math.max(Math.round(count/max*100),4);c.innerHTML+=`<div class="trend-bar" style="height:${h}%" title="${date}: ${count} report${count!==1?'s':''}"></div>`;});}
+document.addEventListener('keydown',e=>{if(e.key==='Enter'){ping();const id=document.activeElement.id;if(id==='query')searchReports();if(['start_date','end_date','radiologist_select','f_modality','f_clinic'].includes(id))filterReports();}});
+pollProgress();
+</script>
+</body>
+</html>

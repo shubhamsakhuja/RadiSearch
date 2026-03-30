@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>RadiSearch — Logged Out</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap"
+      rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: #0d1117;
+    color: #e6edf3;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    gap: 14px;
+    text-align: center;
+    padding: 24px;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 20px;
+    font-weight: 600;
+    color: #e6edf3;
+    margin-bottom: 8px;
+  }
+  .logo svg {
+    width: 28px;
+    height: 28px;
+    color: #1a56db;
+  }
+
+  h2 {
+    font-size: 22px;
+    font-weight: 600;
+  }
+
+  p {
+    font-size: 14px;
+    color: #8b949e;
+    line-height: 1.7;
+    max-width: 340px;
+  }
+
+  .btn {
+    display: inline-block;
+    margin-top: 8px;
+    padding: 10px 28px;
+    background: #1a56db;
+    color: #fff;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: background 0.15s;
+  }
+  .btn:hover { background: #1444b8; }
+
+  .footer {
+    margin-top: 8px;
+    font-size: 12px;
+    color: #4b5563;
+  }
+</style>
+</head>
+<body>
+
+  <div class="logo">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+         stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4
+               M9 3v18m0 0h10a2 2 0 0 0 2-2v-4
+               M9 21H5a2 2 0 0 1-2-2v-4m0 0h18"/>
+    </svg>
+    RadiSearch
+  </div>
+
+  <h2>You've been logged out</h2>
+
+  <p>
+    Your session has ended securely.<br>
+    All access to patient reports has been closed.
+  </p>
+
+  <a class="btn" href="/auth/login">Log Back In</a>
+
+  <p class="footer">Created by Shubham Sakhuja</p>
+
+</body>
+</html>
