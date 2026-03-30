@@ -1,0 +1,78 @@
+# =============================================================================
+# RadiSearch — Python Dependencies
+# =============================================================================
+# Install everything:
+#   pip install -r requirements.txt
+#
+# Conditional installs (if you want to be minimal):
+#   Core only (local mode, no AWS, no database):
+#     pip install flask msal chromadb sentence-transformers pandas python-dotenv
+#
+#   Add PostgreSQL support (USE_PKL_DATA=false):
+#     pip install psycopg2-binary
+#
+#   Add AWS support (USE_BEDROCK=true or USE_S3=true):
+#     pip install boto3
+# =============================================================================
+
+
+# ── Web framework ─────────────────────────────────────────────────────────────
+# Flask: the web server, routing, blueprints, session, SSE streaming
+flask>=3.0.0
+
+
+# ── Microsoft Azure AD SSO ────────────────────────────────────────────────────
+# msal: OAuth2 / OpenID Connect login flow with Microsoft
+# Required even in DEV_MODE — imported at module level in auth.py
+msal>=1.28.0
+
+
+# ── PostgreSQL ────────────────────────────────────────────────────────────────
+# Only used when USE_PKL_DATA=false (production database mode)
+# Safe to install even when USE_PKL_DATA=true — just never called
+psycopg2-binary>=2.9.9
+
+
+# ── Data handling ─────────────────────────────────────────────────────────────
+# pandas: DataFrame operations in database.py, search.py, api.py (/stats route)
+# numpy:  used internally by sentence-transformers and chromadb
+pandas>=2.0.0
+numpy>=1.26.0
+
+
+# ── Vector store ─────────────────────────────────────────────────────────────
+# chromadb: persistent vector database replacing the old FAISS index
+#   - embeddings.py: PersistentClient, collection.upsert(), collection.query()
+#   - Stores index to chroma_db/ on disk — survives restarts
+#   - No more faiss-cpu needed (removed)
+chromadb>=0.5.0
+
+
+# ── Local embeddings model ────────────────────────────────────────────────────
+# sentence-transformers: converts report text → 384-dim vectors (all-MiniLM-L6-v2)
+# Only loaded when USE_BEDROCK_EMBED=false (default, free)
+# When USE_BEDROCK_EMBED=true this is never imported — but safe to keep installed
+sentence-transformers>=2.7.0
+
+
+# ── AWS SDK ───────────────────────────────────────────────────────────────────
+# boto3: used in three places, all lazily imported (only when needed):
+#   llm.py       → boto3.Session().client("bedrock-runtime")  when USE_BEDROCK=true
+#   embeddings.py→ boto3.Session().client("bedrock-runtime")  when USE_BEDROCK_EMBED=true
+#   embeddings.py→ boto3.client("s3")                         when USE_S3=true
+# Safe to install even when all USE_BEDROCK* and USE_S3 flags are false
+boto3>=1.34.0
+
+
+# ── Environment variable loading ──────────────────────────────────────────────
+# python-dotenv: loads .env file into os.environ at startup (config.py)
+python-dotenv>=1.0.0
+
+
+# =============================================================================
+# REMOVED vs previous requirements.txt
+# =============================================================================
+# faiss-cpu  — removed. Project migrated from FAISS to ChromaDB in v1.1.
+#              app.py startup diagnostics referencing faiss_index.bin also removed.
+#              If you have old faiss_index.bin files, they can be safely deleted.
+# =============================================================================
