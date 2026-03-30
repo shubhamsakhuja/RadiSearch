@@ -1,0 +1,73 @@
+# =============================================================================
+# RadiSearch — .gitignore
+# =============================================================================
+# Files and directories that should NEVER be committed to git.
+# Most critically: .env (credentials) and the embedding cache files
+# which can be 100MB+ and are rebuilt automatically at runtime.
+# =============================================================================
+
+# ── Credentials and secrets ───────────────────────────────────────────────────
+# These contain database passwords, Azure secrets, and Flask keys.
+# Committing these would be a serious security incident.
+.env
+.env.*
+!.env.example
+
+# ── Embedding cache files ─────────────────────────────────────────────────────
+# These are large binary files (~100MB+) generated automatically at runtime.
+# They are rebuilt fresh daily and should not be version controlled.
+faiss_index.bin
+embedding_meta.pkl
+
+# ── Python ────────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.pyo
+
+# ── Virtual environments ──────────────────────────────────────────────────────
+venv/
+env/
+ENV/
+.venv/
+.env/
+
+# ── Distribution / packaging ──────────────────────────────────────────────────
+dist/
+build/
+*.egg-info/
+*.egg
+
+# ── IDEs ──────────────────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ── OS generated ──────────────────────────────────────────────────────────────
+.DS_Store
+.DS_Store?
+._*
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# ── Logs ──────────────────────────────────────────────────────────────────────
+*.log
+logs/
+
+# ── Testing ───────────────────────────────────────────────────────────────────
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# ── Jupyter ───────────────────────────────────────────────────────────────────
+.ipynb_checkpoints/
+*.ipynb
+
+# ── Backup files created during editing ──────────────────────────────────────
+*.bak
+*.orig
